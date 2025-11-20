@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 3: Version Control with Git</title>
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+/* 1. THE SETUP & COLORS */
+:root {
+  --bg-color: #FFFFFF;
+  --primary-text: #1E293B;
+  --secondary-text: #475569;
+  --accent-color: #3B82F6; /* Bright Blue */
+  --accent-dark: #1E3A8A; /* Dark Blue */
+  --accent-light: #EFF6FF; /* Very Light Blue */
+  --tile-bg: #F9FAFB;
+  --tile-border: #E5E7EB;
+  --font-heading: 'Inter', sans-serif;
+  --font-code: 'Roboto Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+  --code-bg: #1F2937; /* Dark gray for terminal */
+  --code-text: #F9FAFB; /* Light text */
+  --command-color: #4ADE80; /* Bright Green */
+  --comment-color: #9CA3AF; /* Light Gray */
+  --output-color: #FBBF24; /* Amber for output/success */
+  --conflict-color: #EF4444; /* Red for errors/conflicts */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f1f5f9; /* Lighter body background */
+  display: grid;
+  gap: 30px;
+  grid-template-columns: 1fr;
+  margin: 0;
+  min-height: 100vh;
+  padding: 30px 0;
+  place-items: center;
+}
+
+.slide-container {
+  align-items: center;
+  background-color: var(--bg-color);
+  border-radius: 16px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 800px;
+  justify-content: flex-start; /* Align content to top */
+  overflow: hidden;
+  padding: 40px 60px;
+  position: relative;
+  width: 1280px;
+}
+
+/* Header strip */
+.slide-container::before {
+  content: '';
+  height: 12px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 0;
+  background-color: var(--accent-dark);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.slide-container>* {
+  position: relative;
+  z-index: 1;
+}
+
+/* 2. TYPOGRAPHY & CODE STYLES */
+
+.slide-container h1, .slide-container h2, .slide-container h3 {
+  color: var(--primary-text);
+  font-family: var(--font-heading);
+  margin: 0;
+}
+
+.slide-container p, .slide-container li {
+  color: var(--secondary-text);
+  font-family: var(--font-body);
+}
+
+.slide-container h1 { font-size: 84px; font-weight: 800; }
+
+.slide-container .slide-title {
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 25px;
+  text-align: left;
+  width: 100%;
+  color: var(--accent-dark);
+  border-bottom: 3px solid var(--accent-color);
+  padding-bottom: 10px;
+}
+
+.slide-container h3 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 15px;
+  color: var(--accent-color);
+}
+
+.slide-container p, .slide-container li {
+  font-size: 20px;
+  line-height: 1.6;
+}
+.slide-container ul {
+    margin-left: 20px;
+    padding-left: 0;
+}
+
+.content-area {
+  align-items: flex-start;
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  width: 100%;
+}
+
+.code-block {
+    background-color: var(--code-bg);
+    color: var(--code-text);
+    padding: 25px;
+    border-radius: 8px;
+    width: 100%;
+    margin-top: 15px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    font-size: 16px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    font-family: var(--font-code);
+    border-left: 4px solid var(--accent-color);
+}
+.code-block code {
+    display: block;
+}
+.comment {
+    color: var(--comment-color); 
+    font-style: italic;
+}
+.command {
+    color: var(--command-color); 
+    font-weight: 600;
+}
+.output {
+    color: var(--output-color); 
+}
+.conflict {
+    color: var(--conflict-color);
+    font-weight: 700;
+}
+
+/* 3. LAYOUT DEFINITIONS */
+
+/* Two Column Layout for practical demos */
+.two-col-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    width: 100%;
+}
+
+.col-left, .col-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.analogy-box {
+    font-size: 26px; 
+    background-color: var(--accent-light); 
+    padding: 20px 30px; 
+    border-radius: 10px;
+    border-left: 5px solid var(--accent-color);
+    margin-top: 20px;
+}
+
+.analogy-box strong {
+    color: var(--accent-dark);
+}
+
+.assignment-list {
+    margin-top: 30px;
+}
+.assignment-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.assignment-list li {
+    background-color: var(--tile-bg);
+    border: 1px solid var(--tile-border);
+    border-left: 6px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 20px 30px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+.assignment-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.assignment-list i {
+    font-size: 36px;
+    color: var(--accent-dark);
+    line-height: 1;
+}
+.assignment-list strong {
+    color: var(--primary-text);
+    font-size: 22px;
+    font-family: var(--font-heading);
+    display: block;
+    margin-bottom: 5px;
+}
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: Title_Slide (Greeting and Recap) -->
+<div class="slide-container" id="slide1" style="justify-content: center; text-align: center;">
+    <div>
+        <h1 style="font-size: 48px; color: var(--accent-dark); font-weight: 600;">DEVOPS INTERNSHIP</h1>
+        <h1 style="color: var(--primary-text); font-size: 100px; margin-top: 10px;">Version Control with Git</h1>
+        <p style="font-size: 32px; margin-top: 30px; color: var(--secondary-text); font-weight: 600;">
+            Welcome back! Day 3 is all about mastering the code time machine.
+        </p>
+    </div>
+</div>
+
+<!-- Slide 2: Introduction to Git -->
+<div class="slide-container" id="slide2">
+    <h2 class="slide-title">2. Introduction to Git</h2>
+    <div class="content-area" style="flex-direction: column;">
+        <p style="margin-bottom: 10px;">
+            **Git** is a **Distributed Version Control System (DVCS)** used to track and manage changes to code over time. It allows multiple developers to safely collaborate.
+        </p>
+        <div class="analogy-box">
+            <i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-color); margin-right: 15px;"></i>
+            **Analogy:** Think of Git as a **time machine for your code**. It lets you instantly revert to previous states, inspect history, and track who changed what.
+        </div>
+        
+        <div class="two-col-layout" style="margin-top: 40px;">
+            <div class="col-left">
+                <h3><i class="fa-solid fa-layer-group" style="margin-right: 10px;"></i> Key Concepts</h3>
+                <ul>
+                    <li>**Repository (Repo):** The project database of all files and history.</li>
+                    <li>**Commit:** A permanent snapshot of the repository at a specific moment.</li>
+                    <li>**Branch:** An independent, parallel line of development.</li>
+                </ul>
+            </div>
+            <div class="col-right">
+                <h3><i class="fa-solid fa-people-arrows" style="margin-right: 10px;"></i> DVCS Advantage</h3>
+                <p>Every developer has a **full copy** of the project history locally, enabling offline work and reducing dependency on a single central server.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 3: Basic Git Commands (Practical 1) -->
+<div class="slide-container" id="slide3">
+    <h2 class="slide-title">3. Basic Git Commands: Setup & Snapshot</h2>
+    <div class="content-area" style="flex-direction: column; margin-bottom: 10px;">
+        <p>The fundamental steps to start tracking changes in any project.</p>
+        <div class="code-block">
+            <span class="comment"># 1. Initialize a new Git repository in the current directory</span>
+            <span class="command">git init my-project</span>
+            <span class="output">Initialized empty Git repository in /path/to/my-project/.git/</span>
+            <span class="command">cd my-project</span>
+            
+            <span class="comment"># 2. Create a file and check status (it's untracked)</span>
+            <span class="command">echo "Hello, World! Welcome to DevOps." > hello.txt</span>
+            <span class="command">git status</span>
+            <span class="output">Untracked files: hello.txt</span>
+            
+            <span class="comment"># 3. Stage the file (prepare it for the next commit)</span>
+            <span class="command">git add hello.txt</span>
+            <span class="command">git status</span>
+            <span class="output">Changes to be committed: new file: hello.txt</span>
+            
+            <span class="comment"># 4. Commit the staged changes (create the history snapshot)</span>
+            <span class="command">git commit -m "Initial commit"</span>
+            <span class="output">[main (root-commit) 9a8b7c6] Initial commit<br>1 file changed, 1 insertion(+)</span>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 4: Branching and Merging Introduction -->
+<div class="slide-container" id="slide4">
+    <h2 class="slide-title">4. Branching: Isolation & Collaboration</h2>
+    <div class="content-area" style="flex-direction: column;">
+        <p style="margin-bottom: 10px;">
+            **Branching** is the core feature that enables safe, concurrent development. It keeps new features separated from the stable code (`main`).
+        </p>
+        <div class="analogy-box">
+            <i class="fa-solid fa-utensils" style="color: var(--accent-color); margin-right: 15px;"></i>
+            **Analogy:** Imagine multiple chefs (developers) creating different recipes (features) at separate stations. Once a dish is perfect, they combine it (**merge**) with the main menu.
+        </div>
+        
+        <div class="two-col-layout" style="margin-top: 40px;">
+            <div class="col-left">
+                <h3><i class="fa-solid fa-sitemap" style="margin-right: 10px;"></i> The Workflow</h3>
+                <ol style="list-style-type: decimal;">
+                    <li>Create a new branch for a feature (`feature-x`).</li>
+                    <li>Develop and commit changes on the new branch.</li>
+                    <li>Switch back to `main`.</li>
+                    <li>Merge the completed feature branch into `main`.</li>
+                </ol>
+            </div>
+            <div class="col-right">
+                <h3><i class="fa-solid fa-shield-halved" style="margin-right: 10px;"></i> Protection</h3>
+                <p>The **`main`** branch should always remain stable. If a feature branch breaks, the main project is unaffected.</p>
+                <p>Use `git branch` to list branches and `git checkout` to switch between them.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 5: Branching & Merging Practice (Without Conflicts) -->
+<div class="slide-container" id="slide5">
+    <h2 class="slide-title">Practical 1 & 2: Creating, Switching, and Merging</h2>
+    <div class="content-area" style="flex-direction: column;">
+        <h3>Scenario: Developing a new user login module (`feature-1`)</h3>
+        <div class="code-block">
+            <span class="comment"># 1. Create and switch to the new feature branch</span>
+            <span class="command">git branch feature-1</span>
+            <span class="command">git checkout feature-1</span>
+            <span class="output">Switched to branch 'feature-1'</span>
+            
+            <span class="comment"># 2. Add files and commit on the feature branch</span>
+            <span class="command">echo "User Login Component" > login.js</span>
+            <span class="command">git add .</span>
+            <span class="command">git commit -m "Implement user login logic"</span>
+            
+            <span class="comment"># 3. Switch back to main and merge the completed feature</span>
+            <span class="command">git checkout main</span>
+            <span class="output">Switched to branch 'main'</span>
+            <span class="command">git merge feature-1</span>
+            <span class="output">Updating 9a8b7c6..c1d2e3f<br>Fast-forward<br>login.js | 1 +<br>1 file changed, 1 insertion(+)</span>
+            
+            <span class="comment"># 4. Verify branches and changes</span>
+            <span class="command">git branch</span>
+            <span class="output">* main<br>  feature-1</span>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 6: Merging With Conflicts -->
+<div class="slide-container" id="slide6">
+    <h2 class="slide-title">Practical 3: Merging With Conflicts (The Reality)</h2>
+    <div class="content-area two-col-layout">
+        <div class="col-left">
+            <h3>Detecting the Conflict</h3>
+            <p>A **merge conflict** occurs when changes from two branches modify the *same lines* of code.</p>
+            <div class="code-block" style="font-size: 16px;">
+                <span class="comment"># 1. Main and feature-2 change the same line of 'config.txt'</span>
+                <span class="command">git checkout main</span>
+                <span class="command">git commit -am "Main change to config"</span>
+                <span class="command">git checkout feature-2</span>
+                <span class="command">git commit -am "Feature 2 change to config"</span>
+
+                <span class="comment"># 2. Attempt merge into main</span>
+                <span class="command">git merge feature-2</span>
+                <span class="conflict">Auto-merging config.txt</span>
+                <span class="conflict">CONFLICT (content): Merge conflict in config.txt</span>
+                <span class="output">Automatic merge failed; fix conflicts and then commit the result.</span>
+            </div>
+        </div>
+        <div class="col-right">
+            <h3>Resolving the Conflict</h3>
+            <p>You must manually edit the conflicted file, choosing which code to keep, and then tell Git the conflict is fixed.</p>
+            <div class="code-block" style="font-size: 16px;">
+                <span class="comment"># 1. The conflicted file markers:</span>
+                <span class="conflict">&lt;&lt;&lt;&lt;&lt;&lt; HEAD (main's changes)</span>
+                <span class="conflict">SERVER_IP=192.168.1.1</span>
+                <span class="conflict">======= (separator)</span>
+                <span class="conflict">SERVER_IP=10.0.0.5</span>
+                <span class="conflict">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature-2 (feature-2's changes)</span>
+                
+                <span class="comment"># 2. Edit 'config.txt' to the correct combined value (e.g., SERVER_IP=10.0.0.5)</span>
+                
+                <span class="comment"># 3. Add and commit the resolved file</span>
+                <span class="command">git add config.txt</span>
+                <span class="command">git commit -m "Resolve merge conflict for config update"</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 7: History and Cleanup -->
+<div class="slide-container" id="slide7">
+    <h2 class="slide-title">Practical 5 & 6: History & Cleanup</h2>
+    <div class="content-area two-col-layout">
+        <div class="col-left">
+            <h3><i class="fa-solid fa-tree" style="margin-right: 10px;"></i> Viewing the Commit History</h3>
+            <p>Use `git log` to see the complete history. The `--graph` flag is essential for visualizing branches.</p>
+            <div class="code-block" style="font-size: 16px;">
+                <span class="comment"># View compact, graphical history of all branches</span>
+                <span class="command">git log --oneline --graph --all</span>
+                <span class="output">* 123c45d (HEAD -> main) Resolve merge conflict</span>
+                <span class="output">| * 987a6b5 (feature-2) Feature 2 change</span>
+                <span class="output">|/</span>
+                <span class="output">* c1d2e3f Implement user login logic</span>
+                <span class="output">* 9a8b7c6 Initial commit</span>
+            </div>
+        </div>
+        <div class="col-right">
+            <h3><i class="fa-solid fa-broom" style="margin-right: 10px;"></i> Deleting Branches</h3>
+            <p>Once a feature is merged, the branch is obsolete and should be deleted to keep your repository clean.</p>
+            <div class="code-block" style="font-size: 16px;">
+                <span class="comment"># Delete a branch that has been successfully merged (safer option)</span>
+                <span class="command">git branch -d feature-1</span>
+                <span class="output">Deleted branch feature-1 (was c1d2e3f).</span>
+                
+                <span class="comment"># Force delete a branch (use only if you're sure you don't need the changes)</span>
+                <span class="command">git branch -D stale-branch</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 8: Assignments -->
+<div class="slide-container" id="slide8">
+    <h2 class="slide-title">5. Assignments (5 Minutes)</h2>
+    <div class="assignment-list content-area">
+        <ul>
+            <li>
+                <i class="fa-solid fa-terminal"></i>
+                <div>
+                    <strong>Assignment 1: Local Workflow</strong><br>
+                    Create a local Git repository, and practice `init`, `add`, and multiple `commit` operations.
+                </div>
+            </li>
+            <li>
+                <i class="fa-solid fa-shuffle"></i>
+                <div>
+                    <strong>Assignment 2: Branching & Merging</strong><br>
+                    Create a feature branch, commit changes, switch back to main, and successfully merge the feature.
+                </div>
+            </li>
+            <li>
+                <i class="fa-solid fa-user-tie"></i>
+                <div>
+                    <strong>Assignment 3: Reflection</strong><br>
+                    Write a short reflection (3-4 sentences) on the importance of version control in collaborative team projects.
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+</body>
+</html>
